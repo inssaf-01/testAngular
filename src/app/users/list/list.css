@@ -1,0 +1,8 @@
+* {
+  pointer-events: auto !important;
+}
+button {
+  position: relative;
+  z-index: 9999;
+  pointer-events: auto;
+}

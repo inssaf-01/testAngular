@@ -1,0 +1,145 @@
+<!-- HEADER -->
+<div class="flex justify-between items-center mb-8">
+  <div>
+    <h2 class="text-3xl font-bold text-gray-800">Users</h2>
+    <p class="text-gray-500">Gestion des utilisateurs</p>
+  </div>
+  <button (click)="openCreateModal()"
+    class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"> ➕
+    Create User </button>
+</div>
+<!-- LIST -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+  <div *ngFor="let user of users" class="bg-white p-4 rounded-xl shadow hover:shadow-lg transition">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center font-bold"> {{
+        user.username.charAt(0) }} </div>
+      <div>
+        <p class="font-semibold">{{ user.username }}</p>
+        <p class="text-sm text-gray-500">{{ user.email }}</p>
+      </div>
+    </div>
+    <div class="mt-3 flex justify-between items-center"> <span class="text-xs px-2 py-1 bg-gray-100 rounded"> {{
+        user.role }} </span>
+      <!-- ACTIONS -->
+      <div class="flex gap-2">
+        <!-- EDIT -->
+        <button type="button" (click)="openEditModal(user)" class="text-blue-600 text-sm hover:underline">
+          Edit
+        </button>
+
+        <!-- DELETE -->
+        <button type="button" (click)="confirmDelete(user)" class="text-red-500 text-sm hover:underline">
+
+          Delete
+
+        </button>
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- EMPTY -->
+<div *ngIf="users.length === 0" class="text-center mt-10 text-gray-400"> No users found </div>
+<!-- ================= CREATE MODAL ================= -->
+<div *ngIf="openCreateModalFlag" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="bg-white w-full max-w-md p-6 rounded-xl shadow-xl">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold">Create User</h3> <button (click)="closeModal()"
+        class="text-gray-500 hover:text-red-500">✖</button>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="createUser()" class="space-y-3">
+      <input class="w-full border p-2 rounded" formControlName="username" placeholder="Username" />
+      <p *ngIf="form.get('username')?.invalid && form.get('username')?.touched" class="text-red-500 text-sm"> Username
+        min 3 caractères </p>
+      <input class="w-full border p-2 rounded" formControlName="email" placeholder="Email" />
+      <p *ngIf="form.get('email')?.invalid && form.get('email')?.touched" class="text-red-500 text-sm"> Email invalide
+      </p>
+      <input class="w-full border p-2 rounded" type="password" formControlName="password" placeholder="Password" />
+      <p *ngIf="form.get('password')?.invalid && form.get('password')?.touched" class="text-red-500 text-sm"> Min 6
+        caractères </p>
+      <select class="w-full border p-2 rounded" formControlName="role">
+        <option value="USER">USER</option>
+        <option value="ADMIN">ADMIN</option>
+      </select>
+      <div class="flex justify-end gap-3 pt-4"> <button type="button" (click)="closeModal()"
+          class="px-4 py-2 text-gray-600"> Cancel </button>
+        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"> Save </button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- ================= EDIT MODAL ================= -->
+
+<div *ngIf="openEditModalFlag" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="bg-white w-full max-w-md p-6 rounded-xl shadow-xl">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold">Edit User</h3> <button (click)="closeModal()"
+        class="text-gray-500 hover:text-red-500">✖</button>
+    </div>
+    <form [formGroup]="editForm" (ngSubmit)="updateUser()" class="space-y-3">
+      <input class="w-full border p-2 rounded bg-gray-100 cursor-not-allowed" formControlName="username" readonly />
+      <input class="w-full border p-2 rounded" formControlName="email" />
+      <!-- OLD PASSWORD --> <input class="w-full border p-2 rounded" type="password" formControlName="oldPassword"
+        placeholder="Old password" />
+      <!-- NEW PASSWORD --> <input class="w-full border p-2 rounded" type="password" formControlName="newPassword"
+        placeholder="New password" />
+      <!-- CONFIRM PASSWORD --> <input class="w-full border p-2 rounded" type="password"
+        formControlName="confirmPassword" placeholder="Confirm password" />
+      <select class="w-full border p-2 rounded" formControlName="role">
+        <option value="USER">USER</option>
+        <option value="ADMIN">ADMIN</option>
+      </select>
+      <div class="flex justify-end gap-3 pt-4">
+        <button type="button" (click)="closeModal()" class="px-4 py-2 text-gray-600"> Cancel </button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"> Update </button>
+      </div>
+    </form>
+  </div>
+  
+</div>
+<!-- ================= CONFIRM POPUP ================= -->
+
+  <div *ngIf="showConfirmModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
+
+    <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl">
+
+      <h3 class="text-xl font-bold text-gray-800 mb-3">
+        Confirmation
+      </h3>
+
+      <p class="text-gray-500 mb-6">
+
+        <span *ngIf="confirmAction === 'delete'">
+          Voulez-vous vraiment supprimer cet utilisateur ?
+        </span>
+
+        <span *ngIf="confirmAction === 'update'">
+          Voulez-vous vraiment sauvegarder les modifications ?
+        </span>
+
+      </p>
+
+      <div class="flex justify-end gap-3">
+
+        <!-- CANCEL -->
+        <button type="button" (click)="closeModal()"
+          class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100">
+
+          Annuler
+
+        </button>
+
+        <!-- CONFIRM -->
+        <button type="button" (click)="executeConfirmedAction()"
+          class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
+
+          Confirmer
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
