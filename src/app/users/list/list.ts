@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { UserService } from '../user.service';
 
 @Component({
@@ -27,6 +27,7 @@ export class ListUserComponent implements OnInit {
   selectedUserId: number | null = null;
   toastMessage = '';
   userToDeleteId: number | null = null;
+  toastType: 'success' | 'error' = 'success';
 
   constructor(
     private userService: UserService,
@@ -60,13 +61,14 @@ export class ListUserComponent implements OnInit {
   openEditModal(user: any) {
     this.selectedUserId = user.id;
     this.editForm = this.fb.group({
-      username: [{ value: user.username, disabled: true }], // On désactive pour le design "readonly"
+      username: [{ value: user.username, disabled: true }],
       email: [user.email, [Validators.required, Validators.email]],
       role: [user.role, Validators.required],
+
       oldPassword: [''],
-      newPassword: [''],
+      newPassword: ['', [Validators.minLength(6)]],
       confirmPassword: ['']
-    });
+    }, { validators: this.passwordMatchValidator });
     this.openEditModalFlag = true;
   }
 
@@ -91,9 +93,11 @@ export class ListUserComponent implements OnInit {
 
   // --- GESTION DES TOASTS ---
 
-  triggerToast(message: string) {
+  triggerToast(message: string, type: 'success' | 'error' = 'success') {
     this.toastMessage = message;
+    this.toastType = type;
     this.showToast = true;
+
     setTimeout(() => this.showToast = false, 3000);
   }
 
@@ -106,10 +110,16 @@ export class ListUserComponent implements OnInit {
     }
 
     this.userService.addUser(this.form.value).subscribe({
-      next: (newUser: any) => {
-        this.users = [...this.users, newUser];
+      next: (res: any) => {
+
+        if (!res.success) {
+          this.triggerToast(res.message, 'error');
+          return;
+        }
+
+        this.users = [...this.users, res.data]; // 👈 IMPORTANT
         this.closeModal();
-        this.triggerToast('Utilisateur ajouté avec succès ! ✨');
+        this.triggerToast(res.message, 'success');
       },
       error: () => this.triggerToast('Erreur lors de la création')
     });
@@ -134,29 +144,30 @@ export class ListUserComponent implements OnInit {
 
     const raw = this.editForm.getRawValue();
 
-    // 1. check password confirm
-    if (raw.newPassword || raw.oldPassword) {
+    const payload: any = {
+      email: raw.email,
+      role: raw.role
+    };
+
+    if (raw.oldPassword && raw.newPassword) {
 
       if (raw.newPassword !== raw.confirmPassword) {
-        this.triggerToast('Les mots de passe ne correspondent pas');
+        this.triggerToast("Les mots de passe ne correspondent pas", "error");
         return;
       }
 
-      if (!raw.oldPassword) {
-        this.triggerToast('Ancien mot de passe requis');
-        return;
-      }
+      payload.oldPassword = raw.oldPassword;
+      payload.newPassword = raw.newPassword;
     }
 
-    this.pendingUpdateData = {
-      email: raw.email,
-      role: raw.role,
-      oldPassword: raw.oldPassword,
-      newPassword: raw.newPassword
-    };
+    this.pendingUpdateData = payload;
 
     this.confirmAction = 'update';
     this.showConfirmModal = true;
+  }
+  passwordMismatch(): boolean {
+    const raw = this.editForm.getRawValue();
+    return raw.newPassword !== raw.confirmPassword;
   }
   executeConfirmedAction() {
 
@@ -168,23 +179,28 @@ export class ListUserComponent implements OnInit {
         this.userService.deleteUser(this.userToDeleteId)
           .subscribe({
 
-            next: () => {
+            next: (res: any) => {
 
-              this.users = this.users.filter(
-                u => u.id !== this.userToDeleteId
+              if (!res.success) {
+                this.triggerToast(res.message, 'error');
+                return;
+              }
+
+              this.users = this.users.map(u =>
+                u.id === res.data.id ? res.data : u
               );
 
-              this.userToDeleteId = null;
-              this.confirmAction = null;
-              this.showConfirmModal = false;
-
               this.closeModal();
-
-              this.triggerToast('Utilisateur supprimé');
+              this.triggerToast(res.message, 'success');
             },
 
-            error: () => {
-              this.triggerToast('Erreur suppression');
+            error: (err) => {
+
+              const msg =
+                err.error?.message ||
+                'Erreur serveur';
+
+              this.triggerToast(msg, 'error');
             }
           });
       }
@@ -214,13 +230,26 @@ export class ListUserComponent implements OnInit {
 
           error: (err) => {
 
-            const msg =
-              err.error?.message ||
-              'Erreur mise à jour';
+            const backend = err.error;
 
-            this.triggerToast(msg);
+            if (!backend?.success) {
+              this.triggerToast(backend.message || 'Erreur serveur', 'error');
+              return;
+            }
+
+            this.triggerToast('Erreur inconnue', 'error');
           }
         });
     }
+  }
+  passwordMatchValidator(group: AbstractControl) {
+    const newPassword = group.get('newPassword')?.value;
+    const confirmPassword = group.get('confirmPassword')?.value;
+
+    if (newPassword !== confirmPassword) {
+      return { passwordMismatch: true };
+    }
+
+    return null;
   }
 }
