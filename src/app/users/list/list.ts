@@ -53,6 +53,36 @@ export class ListUserComponent implements OnInit {
       this.users = data;
     });
   }
+  toggleRole(user: any) {
+
+  const newRole = user.role === 'USER' ? 'ADMIN' : 'USER';
+
+  this.userService.updateUser(user.id, { role: newRole })
+    .subscribe({
+
+      next: (res: any) => {
+
+        if (!res.success) {
+          this.triggerToast(res.message, 'error');
+          return;
+        }
+
+        // UPDATE UI DIRECT
+        this.users = this.users.map(u =>
+          u.id === user.id
+            ? { ...u, role: newRole }
+            : u
+        );
+
+        this.triggerToast('Role updated', 'success');
+      },
+
+      error: () => {
+        this.triggerToast('Server error', 'error');
+      }
+
+    });
+}
 
   // --- GESTION DES MODALS ---
 
@@ -175,37 +205,36 @@ export class ListUserComponent implements OnInit {
 
     this.showConfirmModal = true;
   }
+  // fct abondonnee
+  //updateUser() {
 
+  //   if (this.selectedUserId === null || this.editForm.invalid) {
+  //     return;
+  //   }
 
-  updateUser() {
+  //   const raw = this.editForm.getRawValue();
 
-    if (this.selectedUserId === null || this.editForm.invalid) {
-      return;
-    }
+  //   const payload: any = {
+  //     email: raw.email,
+  //     role: raw.role
+  //   };
 
-    const raw = this.editForm.getRawValue();
+  //   if (raw.oldPassword && raw.newPassword) {
 
-    const payload: any = {
-      email: raw.email,
-      role: raw.role
-    };
+  //     if (raw.newPassword !== raw.confirmPassword) {
+  //       this.triggerToast("Les mots de passe ne correspondent pas", "error");
+  //       return;
+  //     }
 
-    if (raw.oldPassword && raw.newPassword) {
+  //     payload.oldPassword = raw.oldPassword;
+  //     payload.newPassword = raw.newPassword;
+  //   }
 
-      if (raw.newPassword !== raw.confirmPassword) {
-        this.triggerToast("Les mots de passe ne correspondent pas", "error");
-        return;
-      }
+  //   this.pendingUpdateData = payload;
 
-      payload.oldPassword = raw.oldPassword;
-      payload.newPassword = raw.newPassword;
-    }
-
-    this.pendingUpdateData = payload;
-
-    this.confirmAction = 'update';
-    this.showConfirmModal = true;
-  }
+  //   this.confirmAction = 'update';
+  //   this.showConfirmModal = true;
+  // }
   passwordMismatch(): boolean {
     const raw = this.editForm.getRawValue();
     return raw.newPassword !== raw.confirmPassword;
