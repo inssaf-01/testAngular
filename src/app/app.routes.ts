@@ -3,10 +3,11 @@ import { LoginComponent } from './auth/login/login';
 import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout';
 import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout';
 import { ListUserComponent } from './users/list/list';
+import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
 
-  // 🔴 LOGIN AREA
+  // 🔴 AUTH
   {
     path: '',
     component: AuthLayoutComponent,
@@ -16,10 +17,11 @@ export const routes: Routes = [
     ]
   },
 
-  // 🟢 APP AREA (avec sidebar)
+  // 🟢 PROTECTED AREA
   {
     path: '',
     component: DashboardLayoutComponent,
+    canActivate: [authGuard],
     children: [
       { path: 'users', component: ListUserComponent }
     ]

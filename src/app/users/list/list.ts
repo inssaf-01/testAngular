@@ -103,6 +103,7 @@ export class ListUserComponent implements OnInit {
           this.users = this.users.map(u =>
             u.id === user.id ? { ...u, role: newRole } : u
           );
+           this.loadUsers();
 
           this.triggerToast('Role updated', 'success');
         },
@@ -192,7 +193,6 @@ export class ListUserComponent implements OnInit {
           }
 
           // AJOUT DIRECT DANS LA LISTE
-          this.loadUsers();
           this.closeModal();
 
           this.triggerToast(res.message, 'success');

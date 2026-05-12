@@ -20,7 +20,12 @@ export class LoginComponent {
   constructor(
     private auth: AuthService,
     private router: Router
-  ) {}
+  ) { }
+  ngOnInit() {
+    if (!this.auth.isLoggedIn()) {
+      this.router.navigate(['/login']);
+    }
+  }
 
   triggerToast(message: string, type: 'success' | 'error') {
     const toast = {
@@ -37,7 +42,6 @@ export class LoginComponent {
   }
 
   login() {
-
     this.auth.login({
       login: this.loginValue,
       password: this.password
@@ -45,24 +49,41 @@ export class LoginComponent {
 
       next: (res) => {
 
-        if (!res.success) {
-          this.triggerToast(res.message, 'error');
-          return;
-        }
-
         this.auth.saveToken(res.token);
+        this.auth.saveUser(res.user);
 
-        this.triggerToast('Login successful', 'success');
+        this.triggerToast(res.message || 'Login successful', 'success');
 
         setTimeout(() => {
           this.router.navigate(['/users']);
         }, 800);
       },
 
-      error: () => {
-        this.triggerToast('Server error', 'error');
+      error: (err) => {
+
+        // Cas backend avec réponse JSON
+        if (err?.error?.message) {
+          this.triggerToast(err.error.message, 'error');
+          return;
+        }
+
+        // Cas serveur injoignable
+        if (err.status === 0) {
+          this.triggerToast('Server is not reachable', 'error');
+          return;
+        }
+
+        // Cas serveur erreur 500
+        if (err.status >= 500) {
+          this.triggerToast('Internal server error', 'error');
+          return;
+        }
+
+        // fallback
+        this.triggerToast('Unexpected error', 'error');
       }
 
     });
   }
+
 }

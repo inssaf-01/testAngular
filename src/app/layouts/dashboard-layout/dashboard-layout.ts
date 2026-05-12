@@ -9,11 +9,12 @@ import { AuthService } from '../../auth/auth.service';
   templateUrl: './dashboard-layout.html'
 })
 export class DashboardLayoutComponent {
+  user: any = null;
 
   constructor(
     private auth: AuthService,
     private router: Router
-  ) {}
+  ) { this.user = this.auth.getUser();}
 
   logout() {
     this.auth.logout(); // supprime token
