@@ -55,34 +55,34 @@ export class ListUserComponent implements OnInit {
   }
   toggleRole(user: any) {
 
-  const newRole = user.role === 'USER' ? 'ADMIN' : 'USER';
+    const newRole = user.role === 'USER' ? 'ADMIN' : 'USER';
 
-  this.userService.updateUser(user.id, { role: newRole })
-    .subscribe({
+    this.userService.updateUser(user.id, { role: newRole })
+      .subscribe({
 
-      next: (res: any) => {
+        next: (res: any) => {
 
-        if (!res.success) {
-          this.triggerToast(res.message, 'error');
-          return;
+          if (!res.success) {
+            this.triggerToast(res.message, 'error');
+            return;
+          }
+
+          // UPDATE UI DIRECT
+          this.users = this.users.map(u =>
+            u.id === user.id
+              ? { ...u, role: newRole }
+              : u
+          );
+
+          this.triggerToast('Role updated', 'success');
+        },
+
+        error: () => {
+          this.triggerToast('Server error', 'error');
         }
 
-        // UPDATE UI DIRECT
-        this.users = this.users.map(u =>
-          u.id === user.id
-            ? { ...u, role: newRole }
-            : u
-        );
-
-        this.triggerToast('Role updated', 'success');
-      },
-
-      error: () => {
-        this.triggerToast('Server error', 'error');
-      }
-
-    });
-}
+      });
+  }
 
   // --- GESTION DES MODALS ---
 
@@ -162,7 +162,7 @@ export class ListUserComponent implements OnInit {
           }
 
           // AJOUT DIRECT DANS LA LISTE
-          this.users = [...this.users, res.data];
+          this.loadUsers();
 
           this.closeModal();
 
@@ -257,9 +257,7 @@ export class ListUserComponent implements OnInit {
               }
 
               // REMOVE USER
-              this.users = this.users.filter(
-                u => u.id !== this.userToDeleteId
-              );
+              this.loadUsers();
 
               this.closeModal();
 
@@ -296,16 +294,9 @@ export class ListUserComponent implements OnInit {
               this.triggerToast(res.message, 'error');
               return;
             }
-
             // UPDATE FRONT LIST
-            this.users = this.users.map(u =>
-              u.id === res.data.id
-                ? res.data
-                : u
-            );
-
+            this.loadUsers();
             this.closeModal();
-
             this.triggerToast(res.message, 'success');
           },
 

@@ -1,14 +1,23 @@
-
-button {
-  position: relative;
-  z-index: 9999;
-  pointer-events: auto;
+/* Améliorations globales */
+button, a, input, select {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* seulement sur les éléments interactifs */
-button,
-a,
-input,
-select {
-  transition: all 0.15s ease-in-out;
+/* Effet de clic subtil */
+button:active {
+  transform: scale(0.97);
+}
+
+/* Focus plus propre pour l'accessibilité */
+input:focus, select:focus {
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+/* Scrollbar fine pour la table si besoin */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #e5e7eb;
+  border-radius: 10px;
 }
