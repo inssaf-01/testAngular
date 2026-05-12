@@ -147,11 +147,25 @@
 
 </div>
 <!-- ================= TOAST ================= -->
-<div *ngIf="showToast"
-  class="fixed bottom-5 right-5 z-[9999] px-4 py-3 rounded-lg shadow-lg text-white transition-all duration-300"
-  [ngClass]="{
-    'bg-green-600': toastType === 'success',
-    'bg-red-600': toastType === 'error'
-  }">
-  {{ toastMessage }}
+
+<div class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-3">
+
+  <div *ngFor="let toast of toasts" class="min-w-[300px] px-5 py-4 rounded-xl shadow-2xl text-white font-medium"
+    [class.bg-green-600]="toast.type === 'success'" [class.bg-red-600]="toast.type === 'error'">
+
+    <div class="flex justify-between items-center gap-4">
+
+      <span>{{ toast.message }}</span>
+
+      <button type="button" (click)="toasts = toasts.filter(t => t.id !== toast.id)"
+        class="text-white hover:text-gray-200">
+
+        ✖
+
+      </button>
+
+    </div>
+
+  </div>
+
 </div>

@@ -28,6 +28,7 @@ export class ListUserComponent implements OnInit {
   toastMessage = '';
   userToDeleteId: number | null = null;
   toastType: 'success' | 'error' = 'success';
+  toasts: any[] = []; // tableau des toasts 
 
   constructor(
     private userService: UserService,
@@ -44,6 +45,7 @@ export class ListUserComponent implements OnInit {
 
   ngOnInit() {
     this.loadUsers();
+
   }
 
   loadUsers() {
@@ -94,35 +96,74 @@ export class ListUserComponent implements OnInit {
   // --- GESTION DES TOASTS ---
 
   triggerToast(message: string, type: 'success' | 'error' = 'success') {
-    this.toastMessage = message;
-    this.toastType = type;
-    this.showToast = true;
 
-    setTimeout(() => this.showToast = false, 3000);
+    const toast = {
+      id: Date.now(),
+      message,
+      type
+    };
+
+    this.toasts.push(toast);
+
+    setTimeout(() => {
+      this.toasts = this.toasts.filter(t => t.id !== toast.id);
+    }, 3000);
   }
+
 
   // --- ACTIONS CRUD ---
 
   createUser() {
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
-    this.userService.addUser(this.form.value).subscribe({
-      next: (res: any) => {
+    this.userService.addUser(this.form.value)
+      .subscribe({
 
-        if (!res.success) {
-          this.triggerToast(res.message, 'error');
-          return;
+        next: (res: any) => {
+
+          // SUCCESS FALSE
+          if (!res.success) {
+            this.triggerToast(res.message, 'error');
+            return;
+          }
+
+          // AJOUT DIRECT DANS LA LISTE
+          this.users = [...this.users, res.data];
+
+          this.closeModal();
+
+          this.triggerToast(res.message, 'success');
+        },
+
+        error: (err) => {
+
+          const backend = err.error;
+
+          // MULTIPLE ERRORS
+          if (backend?.messages?.length) {
+
+            backend.messages.forEach((msg: string, index: number) => {
+
+              setTimeout(() => {
+                this.triggerToast(msg, 'error');
+              }, index * 500);
+
+            });
+
+            return;
+          }
+
+          // SINGLE ERROR
+          this.triggerToast(
+            backend?.message || 'Erreur serveur',
+            'error'
+          );
         }
-
-        this.users = [...this.users, res.data]; // 👈 IMPORTANT
-        this.closeModal();
-        this.triggerToast(res.message, 'success');
-      },
-      error: () => this.triggerToast('Erreur lors de la création')
-    });
+      });
   }
 
   // Étape 1 : Ouvrir le pop-up de confirmation
@@ -186,25 +227,29 @@ export class ListUserComponent implements OnInit {
                 return;
               }
 
-              this.users = this.users.map(u =>
-                u.id === res.data.id ? res.data : u
+              // REMOVE USER
+              this.users = this.users.filter(
+                u => u.id !== this.userToDeleteId
               );
 
               this.closeModal();
+
               this.triggerToast(res.message, 'success');
             },
 
             error: (err) => {
 
-              const msg =
-                err.error?.message ||
-                'Erreur serveur';
+              const backend = err.error;
 
-              this.triggerToast(msg, 'error');
+              this.triggerToast(
+                backend?.message || 'Erreur serveur',
+                'error'
+              );
             }
           });
       }
     }
+
 
     // ================= UPDATE =================
     if (this.confirmAction === 'update') {
@@ -215,29 +260,34 @@ export class ListUserComponent implements OnInit {
       )
         .subscribe({
 
-          next: (updatedUser: any) => {
+          next: (res: any) => {
 
+            // ERROR FROM API
+            if (!res.success) {
+              this.triggerToast(res.message, 'error');
+              return;
+            }
+
+            // UPDATE FRONT LIST
             this.users = this.users.map(u =>
-              u.id === updatedUser.id
-                ? updatedUser
+              u.id === res.data.id
+                ? res.data
                 : u
             );
 
             this.closeModal();
 
-            this.triggerToast('Utilisateur mis à jour');
+            this.triggerToast(res.message, 'success');
           },
 
           error: (err) => {
 
             const backend = err.error;
 
-            if (!backend?.success) {
-              this.triggerToast(backend.message || 'Erreur serveur', 'error');
-              return;
-            }
-
-            this.triggerToast('Erreur inconnue', 'error');
+            this.triggerToast(
+              backend?.message || 'Erreur serveur',
+              'error'
+            );
           }
         });
     }
