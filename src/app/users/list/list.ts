@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, FormsModule } from '@angular/forms';
 import { UserService } from '../user.service';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-list',
@@ -35,7 +36,8 @@ export class ListUserComponent implements OnInit {
   selectedRole: string = 'ALL';
   constructor(
     private userService: UserService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private cdr: ChangeDetectorRef
   ) {
     // Formulaire de création
     this.form = this.fb.group({
@@ -53,27 +55,31 @@ export class ListUserComponent implements OnInit {
   }
   //chargement des users
   loadUsers() {
+    console.log("CALL API GET USERS");
+
     this.userService.getUsers().subscribe({
       next: (data: any) => {
-        this.users = data;
-        this.applyFilters(); // IMPORTANT
+        this.users = data || [];
+        this.applyFilters();
+
+        // 🔥 FORCE UI REFRESH
+        this.cdr.detectChanges();
       },
       error: (err) => console.error(err)
     });
   }
   //filters 
   applyFilters() {
+    const term = (this.searchTerm || '').toLowerCase();
 
     this.filteredUsers = this.users.filter(user => {
 
-      // FILTRE ROLE
       const roleMatch =
         this.selectedRole === 'ALL' || user.role === this.selectedRole;
 
-      // FILTRE SEARCH (username + login)
       const searchMatch =
-        user.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        user.login.toLowerCase().includes(this.searchTerm.toLowerCase());
+        (user.username || '').toLowerCase().includes(term) ||
+        (user.login || '').toLowerCase().includes(term);
 
       return roleMatch && searchMatch;
     });
