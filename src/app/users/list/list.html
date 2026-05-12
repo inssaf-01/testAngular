@@ -16,7 +16,7 @@
         user.username.charAt(0) }} </div>
       <div>
         <p class="font-semibold">{{ user.username }}</p>
-        <p class="text-sm text-gray-500">{{ user.email }}</p>
+        <p class="text-sm text-gray-500">{{ user.login }}</p>
       </div>
     </div>
     <div class="mt-3 flex justify-between items-center"> <button
@@ -60,8 +60,8 @@
       <input class="w-full border p-2 rounded" formControlName="username" placeholder="Username" />
       <p *ngIf="form.get('username')?.invalid && form.get('username')?.touched" class="text-red-500 text-sm"> Username
         min 3 caractères </p>
-      <input class="w-full border p-2 rounded" formControlName="email" placeholder="Email" />
-      <p *ngIf="form.get('email')?.invalid && form.get('email')?.touched" class="text-red-500 text-sm"> Email invalide
+      <input class="w-full border p-2 rounded" formControlName="login" placeholder="login" />
+      <p *ngIf="form.get('login')?.invalid && form.get('login')?.touched" class="text-red-500 text-sm"> login invalide
       </p>
       <input class="w-full border p-2 rounded" type="password" formControlName="password" placeholder="Password" />
       <p *ngIf="form.get('password')?.invalid && form.get('password')?.touched" class="text-red-500 text-sm"> Min 6
@@ -88,7 +88,7 @@
     <!-- form abondonne -->
     <!-- <form [formGroup]="editForm" (ngSubmit)="updateUser()" class="space-y-3">
       <input class="w-full border p-2 rounded bg-gray-100 cursor-not-allowed" formControlName="username" readonly />
-      <input class="w-full border p-2 rounded" formControlName="email" />
+      <input class="w-full border p-2 rounded" formControlName="login" />
        <input class="w-full border p-2 rounded" type="password" formControlName="oldPassword"
         placeholder="Old password" />
        <input class="w-full border p-2 rounded" type="password" formControlName="newPassword"

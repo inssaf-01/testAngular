@@ -37,7 +37,7 @@ export class ListUserComponent implements OnInit {
     // Formulaire de création
     this.form = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
+      login: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       role: ['USER', Validators.required]
     });
@@ -94,7 +94,7 @@ export class ListUserComponent implements OnInit {
     this.selectedUserId = user.id;
     this.editForm = this.fb.group({
       username: [{ value: user.username, disabled: true }],
-      email: [user.email, [Validators.required, Validators.email]],
+      login: [user.login, [Validators.required, Validators.email]],
       role: [user.role, Validators.required],
 
       oldPassword: [''],
@@ -215,7 +215,7 @@ export class ListUserComponent implements OnInit {
   //   const raw = this.editForm.getRawValue();
 
   //   const payload: any = {
-  //     email: raw.email,
+  //     login: raw.login,
   //     role: raw.role
   //   };
 
