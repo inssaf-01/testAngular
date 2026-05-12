@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, FormsModule } from '@angular/forms';
 import { UserService } from '../user.service';
 
 @Component({
   selector: 'app-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './list.html',
   styleUrls: ['./list.css'],
 })
@@ -29,7 +29,10 @@ export class ListUserComponent implements OnInit {
   userToDeleteId: number | null = null;
   toastType: 'success' | 'error' = 'success';
   toasts: any[] = []; // tableau des toasts 
-
+  // recherche & filtrage 
+  filteredUsers: any[] = [];
+  searchTerm: string = '';
+  selectedRole: string = 'ALL';
   constructor(
     private userService: UserService,
     private fb: FormBuilder
@@ -42,15 +45,37 @@ export class ListUserComponent implements OnInit {
       role: ['USER', Validators.required]
     });
   }
-
+  // demarage 
   ngOnInit() {
+    console.log("LIST INIT");
     this.loadUsers();
 
   }
-
+  //chargement des users
   loadUsers() {
-    this.userService.getUsers().subscribe((data: any) => {
-      this.users = data;
+    this.userService.getUsers().subscribe({
+      next: (data: any) => {
+        this.users = data;
+        this.applyFilters(); // IMPORTANT
+      },
+      error: (err) => console.error(err)
+    });
+  }
+  //filters 
+  applyFilters() {
+
+    this.filteredUsers = this.users.filter(user => {
+
+      // FILTRE ROLE
+      const roleMatch =
+        this.selectedRole === 'ALL' || user.role === this.selectedRole;
+
+      // FILTRE SEARCH (username + login)
+      const searchMatch =
+        user.username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        user.login.toLowerCase().includes(this.searchTerm.toLowerCase());
+
+      return roleMatch && searchMatch;
     });
   }
   toggleRole(user: any) {
@@ -69,10 +94,10 @@ export class ListUserComponent implements OnInit {
 
           // UPDATE UI DIRECT
           this.users = this.users.map(u =>
-            u.id === user.id
-              ? { ...u, role: newRole }
-              : u
+            u.id === user.id ? { ...u, role: newRole } : u
           );
+
+          this.applyFilters();
 
           this.triggerToast('Role updated', 'success');
         },
@@ -163,7 +188,7 @@ export class ListUserComponent implements OnInit {
 
           // AJOUT DIRECT DANS LA LISTE
           this.loadUsers();
-
+          this.applyFilters();
           this.closeModal();
 
           this.triggerToast(res.message, 'success');
@@ -258,7 +283,7 @@ export class ListUserComponent implements OnInit {
 
               // REMOVE USER
               this.loadUsers();
-
+              this.applyFilters();
               this.closeModal();
 
               this.triggerToast(res.message, 'success');
@@ -296,6 +321,7 @@ export class ListUserComponent implements OnInit {
             }
             // UPDATE FRONT LIST
             this.loadUsers();
+            this.applyFilters();
             this.closeModal();
             this.triggerToast(res.message, 'success');
           },
