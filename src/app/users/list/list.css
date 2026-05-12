@@ -4,3 +4,11 @@ button {
   z-index: 9999;
   pointer-events: auto;
 }
+
+/* seulement sur les éléments interactifs */
+button,
+a,
+input,
+select {
+  transition: all 0.15s ease-in-out;
+}
