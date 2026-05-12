@@ -60,6 +60,7 @@ export class ListUserComponent implements OnInit {
     this.userService.getUsers().subscribe({
       next: (data: any) => {
         this.users = data || [];
+        this.filteredUsers = [...this.users]; // sécurité
         this.applyFilters();
 
         // 🔥 FORCE UI REFRESH
@@ -102,8 +103,6 @@ export class ListUserComponent implements OnInit {
           this.users = this.users.map(u =>
             u.id === user.id ? { ...u, role: newRole } : u
           );
-
-          this.applyFilters();
 
           this.triggerToast('Role updated', 'success');
         },
@@ -194,7 +193,6 @@ export class ListUserComponent implements OnInit {
 
           // AJOUT DIRECT DANS LA LISTE
           this.loadUsers();
-          this.applyFilters();
           this.closeModal();
 
           this.triggerToast(res.message, 'success');
@@ -289,7 +287,6 @@ export class ListUserComponent implements OnInit {
 
               // REMOVE USER
               this.loadUsers();
-              this.applyFilters();
               this.closeModal();
 
               this.triggerToast(res.message, 'success');
@@ -327,7 +324,6 @@ export class ListUserComponent implements OnInit {
             }
             // UPDATE FRONT LIST
             this.loadUsers();
-            this.applyFilters();
             this.closeModal();
             this.triggerToast(res.message, 'success');
           },

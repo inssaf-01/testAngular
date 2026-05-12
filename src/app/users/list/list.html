@@ -100,29 +100,83 @@
 <!-- EMPTY -->
 <div *ngIf="users.length === 0" class="text-center mt-10 text-gray-400"> No users found </div>
 <!-- ================= CREATE MODAL ================= -->
-<div *ngIf="openCreateModalFlag" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-  <div class="bg-white w-full max-w-md p-6 rounded-xl shadow-xl">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-xl font-bold">Create User</h3> <button (click)="closeModal()"
-        class="text-gray-500 hover:text-red-500">✖</button>
+<!-- OVERLAY AVEC BLUR -->
+<div *ngIf="openCreateModalFlag" 
+     class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 transition-all">
+  
+  <!-- MODAL CONTAINER -->
+  <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transform transition-all scale-100">
+    
+    <!-- HEADER -->
+    <div class="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
+      <div>
+        <h3 class="text-xl font-extrabold text-gray-900 tracking-tight">Nouvel Utilisateur</h3>
+        <p class="text-xs text-gray-500 mt-1">Remplissez les informations d'accès.</p>
+      </div>
+      <button (click)="closeModal()" 
+              class="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
-    <form [formGroup]="form" (ngSubmit)="createUser()" class="space-y-3">
-      <input class="w-full border p-2 rounded" formControlName="username" placeholder="Username" />
-      <p *ngIf="form.get('username')?.invalid && form.get('username')?.touched" class="text-red-500 text-sm"> Username
-        min 3 caractères </p>
-      <input class="w-full border p-2 rounded" formControlName="login" placeholder="login" />
-      <p *ngIf="form.get('login')?.invalid && form.get('login')?.touched" class="text-red-500 text-sm"> login invalide
-      </p>
-      <input class="w-full border p-2 rounded" type="password" formControlName="password" placeholder="Password" />
-      <p *ngIf="form.get('password')?.invalid && form.get('password')?.touched" class="text-red-500 text-sm"> Min 6
-        caractères </p>
-      <select class="w-full border p-2 rounded" formControlName="role">
-        <option value="USER">USER</option>
-        <option value="ADMIN">ADMIN</option>
-      </select>
-      <div class="flex justify-end gap-3 pt-4"> <button type="button" (click)="closeModal()"
-          class="px-4 py-2 text-gray-600"> Cancel </button>
-        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"> Save </button>
+
+    <!-- FORMULAIRE -->
+    <form [formGroup]="form" (ngSubmit)="createUser()" class="p-8 space-y-5">
+      
+      <!-- USERNAME -->
+      <div>
+        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Nom d'utilisateur</label>
+        <input class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none" 
+               formControlName="username" placeholder="ex: Jean Dupont" />
+        <p *ngIf="form.get('username')?.invalid && form.get('username')?.touched" 
+           class="text-red-500 text-[11px] mt-1.5 ml-1 flex items-center gap-1">
+           <span class="w-1 h-1 bg-red-500 rounded-full"></span> Min. 3 caractères
+        </p>
+      </div>
+
+      <!-- LOGIN -->
+      <div>
+        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Identifiant (Login)</label>
+        <input class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none" 
+               formControlName="login" placeholder="j.dupont" />
+        <p *ngIf="form.get('login')?.invalid && form.get('login')?.touched" 
+           class="text-red-500 text-[11px] mt-1.5 ml-1 flex items-center gap-1">
+           <span class="w-1 h-1 bg-red-500 rounded-full"></span> Identifiant invalide
+        </p>
+      </div>
+
+      <!-- PASSWORD -->
+      <div>
+        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Mot de passe</label>
+        <input class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none" 
+               type="password" formControlName="password" placeholder="••••••••" />
+        <p *ngIf="form.get('password')?.invalid && form.get('password')?.touched" 
+           class="text-red-500 text-[11px] mt-1.5 ml-1 flex items-center gap-1">
+           <span class="w-1 h-1 bg-red-500 rounded-full"></span> Min. 6 caractères
+        </p>
+      </div>
+
+      <!-- ROLE SELECTION -->
+      <div>
+        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Rôle Système</label>
+        <select class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none appearance-none" 
+                formControlName="role">
+          <option value="USER">Utilisateur Standard</option>
+          <option value="ADMIN">Administrateur</option>
+        </select>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="flex justify-end gap-3 pt-6">
+        <button type="button" (click)="closeModal()"
+                class="px-5 py-2.5 text-sm font-semibold text-gray-500 hover:bg-gray-100 rounded-xl transition-all">
+          Annuler
+        </button>
+        <button type="submit" 
+                class="px-6 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all">
+          Créer le compte
+        </button>
       </div>
     </form>
   </div>
