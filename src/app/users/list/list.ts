@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, FormsModule } from '@angular/forms';
 import { UserService } from '../user.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { ImageService } from '../../profile/image.service';
 
 @Component({
   selector: 'app-list',
@@ -13,7 +14,7 @@ import { ChangeDetectorRef } from '@angular/core';
 })
 export class ListUserComponent implements OnInit {
   users: any[] = [];
-  form: FormGroup;
+  form!: FormGroup;
   editForm!: FormGroup; // Utilisation du definite assignment assertion
 
   // États de l'interface
@@ -34,12 +35,17 @@ export class ListUserComponent implements OnInit {
   filteredUsers: any[] = [];
   searchTerm: string = '';
   selectedRole: string = 'ALL';
+  //Gestion des images 
+  defaultImage = '/def_user.png';
+  backendUrl = 'http://localhost:3000';
   constructor(
     private userService: UserService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
-  ) {
-    // Formulaire de création
+    private cdr: ChangeDetectorRef,
+    private imageService: ImageService
+  ) { }
+
+  initForm() {
     this.form = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
       login: ['', [Validators.required, Validators.email]],
@@ -49,8 +55,8 @@ export class ListUserComponent implements OnInit {
   }
   // demarage 
   ngOnInit() {
+    this.initForm();
     this.loadUsers();
-
   }
   //chargement des users
   loadUsers() {
@@ -58,16 +64,20 @@ export class ListUserComponent implements OnInit {
 
     this.userService.getUsers().subscribe({
       next: (data: any) => {
-        this.users = data || [];
-        this.filteredUsers = [...this.users]; // sécurité
-        this.applyFilters();
 
-        // 🔥 FORCE UI REFRESH
-        this.cdr.detectChanges();
+        this.users = (data || []).map((u: any) => ({
+          ...u,
+          imageUrl: u.id
+            ? `${this.backendUrl}/users/profile-image/${u.id}?t=${Date.now()}`
+            : null
+        }));
+
+        this.applyFilters();
       },
       error: (err) => console.error(err)
     });
   }
+
   //filters 
   applyFilters() {
     const term = (this.searchTerm || '').toLowerCase();
@@ -102,7 +112,7 @@ export class ListUserComponent implements OnInit {
           this.users = this.users.map(u =>
             u.id === user.id ? { ...u, role: newRole } : u
           );
-           this.loadUsers();
+          this.loadUsers();
 
           this.triggerToast('Role updated', 'success');
         },
@@ -348,5 +358,20 @@ export class ListUserComponent implements OnInit {
     }
 
     return null;
+  }
+  //Gestion des images 
+  uploadUserImage(user: any, event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.imageService.uploadProfileImage(file, user.id)
+      .subscribe(() => {
+
+        // update local state DIRECT
+        user.imageUrl =
+          this.imageService.getProfileImage(user.id) + '?t=' + Date.now();
+
+        this.cdr.detectChanges();
+      });
   }
 }

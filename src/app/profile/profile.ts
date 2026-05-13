@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../auth/auth.service';
 import { UserService } from '../users/user.service';
+import { ImageService } from './image.service';
 
 @Component({
   selector: 'app-profile',
@@ -21,7 +22,7 @@ export class ProfileComponent implements OnInit {
 
   constructor(
     private auth: AuthService,
-    private userService: UserService
+    private imageService: ImageService
   ) { }
 
   ngOnInit() {
@@ -43,29 +44,16 @@ export class ProfileComponent implements OnInit {
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
-
     if (!file) return;
 
-    this.selectedFile = file;
+    const userId = this.user.id;
 
-    const formData = new FormData();
+    this.imageService.uploadProfileImage(file, userId)
+      .subscribe(() => {
+        this.profileImage =
+          this.imageService.getProfileImage(userId) + '?t=' + Date.now();
 
-    // IMPORTANT
-    formData.append('file', file);
-
-    formData.append('user_id', this.user.id);
-
-    this.userService.uploadProfileImage(formData)
-      .subscribe({
-        next: () => {
-          this.profileImage =
-            `${this.backendUrl}/users/profile-image/${this.user.id}?t=${Date.now()}`;
-
-          this.loadProfile();
-        },
-        error: (err) => {
-          console.error('Upload error:', err);
-        }
+        this.loadProfile();
       });
   }
 }
