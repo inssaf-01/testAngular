@@ -26,4 +26,10 @@ export class UserService {
   getStats() {
     return this.http.get(`${this.api}/stats`);
   }
+  uploadProfileImage(data: FormData) {
+    return this.http.post(
+      `${this.api}/upload-profile-image`,
+      data
+    );
+  }
 }

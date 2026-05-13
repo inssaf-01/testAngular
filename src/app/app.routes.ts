@@ -5,6 +5,7 @@ import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout';
 import { ListUserComponent } from './users/list/list';
 import { authGuard } from './auth/auth.guard';
 import { DashboardComponent } from './dashboard/dashboard';
+import { ProfileComponent } from './profile/profile';
 
 export const routes: Routes = [
 
@@ -26,7 +27,8 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: 'users', component: ListUserComponent },
-      { path: 'dashboard', component: DashboardComponent }
+      { path: 'dashboard', component: DashboardComponent },
+      { path: 'profile', component: ProfileComponent, }
     ]
   },
 

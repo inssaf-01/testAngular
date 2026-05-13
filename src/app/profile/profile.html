@@ -1,1 +1,52 @@
-<p>profile works!</p>
+<div class="p-8 max-w-4xl mx-auto">
+
+    <h2 class="text-2xl font-bold text-gray-800 mb-8">
+        Mon Profil
+    </h2>
+
+    <div class="bg-white rounded-2xl shadow p-8">
+
+        <div class="flex items-center gap-8">
+
+            <!-- PHOTO -->
+            <div class="relative w-32 h-32">
+
+                <img [src]="profileImage || defaultImage" (error)="profileImage = defaultImage"
+                    class="w-32 h-32 rounded-full object-cover border" />
+
+                <button type="button" (click)="fileInput.click()"
+                    class="absolute bottom-0 right-0 bg-indigo-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow text-lg font-bold">
+
+                    {{ profileImage ? '✎' : '+' }}
+
+                </button>
+
+                <input #fileInput type="file" accept="image/*" hidden (change)="onFileSelected($event)" />
+
+            </div>
+
+            <!-- INFOS -->
+            <div class="space-y-4">
+
+                <div>
+                    <p class="text-gray-500 text-sm">Username</p>
+                    <p class="text-lg font-semibold">{{ user?.username }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500 text-sm">Login</p>
+                    <p class="text-lg font-semibold">{{ user?.login }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500 text-sm">Role</p>
+                    <p class="text-lg font-semibold">{{ user?.role }}</p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
