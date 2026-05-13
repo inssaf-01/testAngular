@@ -100,7 +100,7 @@
 <div *ngIf="filteredUsers.length === 0" class="text-center mt-10 text-gray-400"> No users found </div>
 <!-- ================= CREATE MODAL ================= -->
 <!-- OVERLAY AVEC BLUR -->
-<div *ngIf="openCreateModalFlag"    
+<div *ngIf="openCreateModalFlag"
   class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 transition-all">
 
   <!-- MODAL CONTAINER -->
@@ -224,48 +224,65 @@
 </div>
 <!-- ================= CONFIRM POPUP ================= -->
 
-<div *ngIf="showConfirmModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
+<!-- OVERLAY AVEC EFFET FLOU -->
+<div *ngIf="showConfirmModal"
+  class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 transition-opacity">
 
-  <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl">
+  <!-- MODAL CONTAINER -->
+  <div
+    class="bg-white w-full max-w-sm rounded-3xl shadow-2xl border border-gray-100 overflow-hidden transform transition-all scale-100 p-8 text-center">
 
-    <h3 class="text-xl font-bold text-gray-800 mb-3">
-      Confirmation
+    <!-- ICÔNE DYNAMIQUE -->
+    <div class="mx-auto w-16 h-16 rounded-2xl mb-6 flex items-center justify-center transition-colors"
+      [class.bg-red-50]="confirmAction === 'delete'" [class.bg-indigo-50]="confirmAction === 'update'">
+
+      <!-- Icône Corbeille (Delete) -->
+      <svg *ngIf="confirmAction === 'delete'" class="w-8 h-8 text-red-600" fill="none" stroke="currentColor"
+        viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+      </svg>
+
+      <!-- Icône Check/Update (Update) -->
+      <svg *ngIf="confirmAction === 'update'" class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor"
+        viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+    </div>
+
+    <!-- TEXTE -->
+    <h3 class="text-xl font-extrabold text-gray-900 tracking-tight mb-2">
+      {{ confirmAction === 'delete' ? 'Supprimer ?' : 'Sauvegarder ?' }}
     </h3>
 
-    <p class="text-gray-500 mb-6">
-
+    <p class="text-sm text-gray-500 mb-8 px-2 leading-relaxed">
       <span *ngIf="confirmAction === 'delete'">
-        Voulez-vous vraiment supprimer cet utilisateur ?
+        Cette action est irréversible. Toutes les données liées à cet utilisateur seront supprimées.
       </span>
-
       <span *ngIf="confirmAction === 'update'">
-        Voulez-vous vraiment sauvegarder les modifications ?
+        Les modifications seront appliquées immédiatement sur l'ensemble du profil.
       </span>
-
     </p>
 
-    <div class="flex justify-end gap-3">
-
+    <!-- ACTIONS -->
+    <div class="grid grid-cols-2 gap-3">
       <!-- CANCEL -->
       <button type="button" (click)="closeModal()"
-        class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100">
-
+        class="px-4 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
         Annuler
-
       </button>
 
-      <!-- CONFIRM -->
-      <button type="button" (click)="executeConfirmedAction()"
-        class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
-
+      <!-- CONFIRM (Couleur dynamique) -->
+      <button type="button" (click)="executeConfirmedAction()" [class.bg-red-600]="confirmAction === 'delete'"
+        [class.bg-indigo-600]="confirmAction === 'update'"
+        class="px-4 py-3 rounded-xl text-sm font-bold text-white shadow-lg transition-all active:scale-95 shadow-opacity-20"
+        [class.shadow-red-200]="confirmAction === 'delete'" [class.shadow-indigo-200]="confirmAction === 'update'">
         Confirmer
-
       </button>
-
     </div>
 
   </div>
-
 </div>
 <!-- ================= TOAST ================= -->
 
