@@ -56,6 +56,7 @@ export class ListUserComponent implements OnInit {
   // demarage 
   ngOnInit() {
     this.initForm();
+    this.filteredUsers = [];
     this.loadUsers();
   }
   //chargement des users
@@ -69,31 +70,17 @@ export class ListUserComponent implements OnInit {
           ...u,
           imageUrl: u.id
             ? `${this.backendUrl}/users/profile-image/${u.id}?t=${Date.now()}`
-            : null
+            : this.defaultImage
         }));
 
-        this.applyFilters();
+        this.applyFilters(); // IMPORTANT
+        this.cdr.detectChanges(); // FORCE UPDATE UI
+
       },
       error: (err) => console.error(err)
     });
   }
 
-  //filters 
-  applyFilters() {
-    const term = (this.searchTerm || '').toLowerCase();
-
-    this.filteredUsers = this.users.filter(user => {
-
-      const roleMatch =
-        this.selectedRole === 'ALL' || user.role === this.selectedRole;
-
-      const searchMatch =
-        (user.username || '').toLowerCase().includes(term) ||
-        (user.login || '').toLowerCase().includes(term);
-
-      return roleMatch && searchMatch;
-    });
-  }
   toggleRole(user: any) {
 
     const newRole = user.role === 'USER' ? 'ADMIN' : 'USER';
@@ -273,6 +260,23 @@ export class ListUserComponent implements OnInit {
   //   this.confirmAction = 'update';
   //   this.showConfirmModal = true;
   // }
+  applyFilters() {
+    const term = (this.searchTerm || '').toLowerCase();
+
+    this.filteredUsers = this.users.filter(user => {
+
+      const roleMatch =
+        this.selectedRole === 'ALL' || user.role === this.selectedRole;
+
+      const searchMatch =
+        (user.username || '').toLowerCase().includes(term) ||
+        (user.login || '').toLowerCase().includes(term);
+
+      return roleMatch && searchMatch;
+    });
+
+    console.log("FINAL FILTERED:", this.filteredUsers);
+  }
   passwordMismatch(): boolean {
     const raw = this.editForm.getRawValue();
     return raw.newPassword !== raw.confirmPassword;
