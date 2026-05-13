@@ -52,4 +52,22 @@ export class AuthService {
     }
     this.router.navigate(['/login'], { replaceUrl: true });
   }
+  //RESET PWD
+  sendResetCode(data: { login: string }) {
+    return this.http.post<any>(`${this.api}/send-reset-code`, data);
+  }
+
+  verifyResetCode(data: { login: string; code: string }) {
+    return this.http.post<any>(`${this.api}/verify-reset-code`, data);
+  }
+
+  resetPassword(data: {
+    login: string;
+    code: string;
+    newPassword: string;
+  }) {
+    return this.http.post<any>(`${this.api}/reset-password`, data);
+  }
+
+
 }

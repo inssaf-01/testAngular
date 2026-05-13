@@ -1,15 +1,19 @@
 <div class="h-screen flex items-center justify-center bg-gray-50/50 relative overflow-hidden">
-  
+
   <!-- Décoration d'arrière-plan (optionnel pour le côté moderne) -->
-  <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-50/40 via-transparent to-transparent -z-10"></div>
+  <div
+    class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-50/40 via-transparent to-transparent -z-10">
+  </div>
 
   <div class="bg-white p-10 rounded-2xl shadow-xl shadow-indigo-100/50 border border-gray-100 w-full max-w-[400px]">
 
     <!-- Header du Login -->
     <div class="text-center mb-8">
-      <div class="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-xl mb-4 shadow-lg shadow-indigo-200">
+      <div
+        class="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-xl mb-4 shadow-lg shadow-indigo-200">
         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2-2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2-2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
       </div>
       <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Bienvenue</h2>
@@ -22,27 +26,25 @@
         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Identifiant</label>
         <input
           class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none placeholder:text-gray-300"
-          placeholder="votre login"
-          [(ngModel)]="loginValue"
-        >
+          placeholder="votre login" [(ngModel)]="loginValue">
       </div>
 
       <div>
         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Mot de passe</label>
         <input
           class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none placeholder:text-gray-300"
-          type="password"
-          placeholder="••••••••"
-          [(ngModel)]="password"
-        >
+          type="password" placeholder="••••••••" [(ngModel)]="password">
       </div>
 
-      <button
-        (click)="login()"
-        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl shadow-md shadow-indigo-200 hover:shadow-lg active:scale-[0.98] transition-all mt-2"
-      >
+      <button (click)="login()"
+        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl shadow-md shadow-indigo-200 hover:shadow-lg active:scale-[0.98] transition-all mt-2">
         Se connecter
       </button>
+      <div class="text-right mt-3">
+        <button (click)="openResetModal()" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+          Mot de passe oublié ?
+        </button>
+      </div>
     </div>
 
     <p class="text-center text-xs text-gray-400 mt-8">
@@ -50,18 +52,122 @@
     </p>
   </div>
 </div>
+<!-- RESET PASSWORD MODAL -->
+<div *ngIf="showResetModal"
+  class="fixed inset-0 z-[9998] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+
+  <div class="bg-white w-full max-w-[450px] rounded-2xl shadow-2xl border border-gray-100 p-8 relative">
+
+    <!-- Close Button -->
+    <button
+      (click)="closeResetModal()"
+      class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl font-bold">
+      ×
+    </button>
+
+    <!-- Header -->
+    <div class="text-center mb-6">
+      <h2 class="text-2xl font-bold text-gray-900">
+        Réinitialisation du mot de passe
+      </h2>
+      <p class="text-sm text-gray-500 mt-2">
+        Sécurisation de votre compte
+      </p>
+    </div>
+
+    <!-- STEP 1 -->
+    <div *ngIf="resetStep === 1" class="space-y-4">
+
+      <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">
+        Email
+      </label>
+
+      <input
+        [(ngModel)]="resetLogin"
+        placeholder="votre email"
+        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm
+               focus:bg-white focus:border-indigo-500 focus:ring-4
+               focus:ring-indigo-500/10 outline-none" />
+
+      <button
+        (click)="sendResetCode()"
+        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl">
+        Envoyer le code
+      </button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div *ngIf="resetStep === 2" class="space-y-4">
+
+      <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">
+        Code de vérification
+      </label>
+
+      <input
+        [(ngModel)]="resetCode"
+        placeholder="Entrez le code reçu"
+        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm
+               focus:bg-white focus:border-indigo-500 focus:ring-4
+               focus:ring-indigo-500/10 outline-none" />
+
+      <button
+        (click)="verifyResetCode()"
+        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl">
+        Vérifier
+      </button>
+    </div>
+
+    <!-- STEP 3 -->
+    <div *ngIf="resetStep === 3" class="space-y-4">
+
+      <div>
+        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">
+          Nouveau mot de passe
+        </label>
+
+        <input
+          [(ngModel)]="newPassword"
+          type="password"
+          placeholder="••••••••"
+          class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm
+                 focus:bg-white focus:border-indigo-500 focus:ring-4
+                 focus:ring-indigo-500/10 outline-none" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">
+          Confirmer mot de passe
+        </label>
+
+        <input
+          [(ngModel)]="confirmPassword"
+          type="password"
+          placeholder="••••••••"
+          class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm
+                 focus:bg-white focus:border-indigo-500 focus:ring-4
+                 focus:ring-indigo-500/10 outline-none" />
+      </div>
+
+      <button
+        (click)="resetPasswordAction()"
+        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl">
+        Réinitialiser
+      </button>
+    </div>
+
+  </div>
+</div>
 
 <!-- TOAST (Amélioré) -->
 <div class="fixed bottom-6 right-6 flex flex-col gap-3 z-[9999]">
   <div *ngFor="let toast of toasts"
-       class="flex items-center gap-3 px-5 py-4 rounded-xl text-white shadow-2xl animate-slide-in-right font-medium min-w-[280px]"
-       [class.bg-gray-900]="toast.type === 'success'" 
-       [class.bg-red-600]="toast.type === 'error'">
-    
+    class="flex items-center gap-3 px-5 py-4 rounded-xl text-white shadow-2xl animate-slide-in-right font-medium min-w-[280px]"
+    [class.bg-gray-900]="toast.type === 'success'" [class.bg-red-600]="toast.type === 'error'">
+
     <!-- Icône d'état -->
     <span *ngIf="toast.type === 'success'" class="text-green-400 font-bold">✓</span>
     <span *ngIf="toast.type === 'error'" class="text-white font-bold">✕</span>
-    
+
     <span class="text-sm">{{ toast.message }}</span>
   </div>
 </div>

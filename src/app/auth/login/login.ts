@@ -16,16 +16,24 @@ export class LoginComponent {
   password = '';
 
   toasts: any[] = [];
+  //RESET PWD
+  showResetModal = false;
+  resetStep = 1;
+
+  resetLogin = '';
+  resetCode = '';
+  newPassword = '';
+  confirmPassword = '';
 
   constructor(
     private auth: AuthService,
     private router: Router
   ) { }
-  ngOnInit() {
-    if (!this.auth.isLoggedIn()) {
-      this.router.navigate(['/login']);
-    }
-  }
+  // ngOnInit() {
+  //   if (!this.auth.isLoggedIn()) {
+  //     this.router.navigate(['/login']);
+  //   }
+  // }
 
   triggerToast(message: string, type: 'success' | 'error') {
     const toast = {
@@ -85,5 +93,64 @@ export class LoginComponent {
 
     });
   }
+  openResetModal() {
+    this.showResetModal = true;
+    this.resetStep = 1;
+  }
+
+  closeResetModal() {
+    this.showResetModal = false;
+  }
+
+  sendResetCode() {
+    this.auth.sendResetCode({
+      login: this.resetLogin
+    }).subscribe({
+      next: (res) => {
+        this.triggerToast(res.message, 'success');
+        this.resetStep = 2;
+      },
+      error: (err) => {
+        this.triggerToast(err?.error?.message || 'Error', 'error');
+      }
+    });
+  }
+
+  verifyResetCode() {
+    this.auth.verifyResetCode({
+      login: this.resetLogin,
+      code: this.resetCode
+    }).subscribe({
+      next: (res) => {
+        this.triggerToast(res.message, 'success');
+        this.resetStep = 3;
+      },
+      error: (err) => {
+        this.triggerToast(err?.error?.message || 'Invalid code', 'error');
+      }
+    });
+  }
+
+  resetPasswordAction() {
+    if (this.newPassword !== this.confirmPassword) {
+      this.triggerToast('Passwords do not match', 'error');
+      return;
+    }
+
+    this.auth.resetPassword({
+      login: this.resetLogin,
+      code: this.resetCode,
+      newPassword: this.newPassword
+    }).subscribe({
+      next: (res) => {
+        this.triggerToast(res.message, 'success');
+        this.closeResetModal();
+      },
+      error: (err) => {
+        this.triggerToast(err?.error?.message || 'Reset failed', 'error');
+      }
+    });
+  }
+
 
 }
