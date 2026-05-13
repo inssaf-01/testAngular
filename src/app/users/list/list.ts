@@ -49,7 +49,6 @@ export class ListUserComponent implements OnInit {
   }
   // demarage 
   ngOnInit() {
-    console.log("LIST INIT");
     this.loadUsers();
 
   }

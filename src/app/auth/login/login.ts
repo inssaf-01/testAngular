@@ -29,11 +29,11 @@ export class LoginComponent {
     private auth: AuthService,
     private router: Router
   ) { }
-  // ngOnInit() {
-  //   if (!this.auth.isLoggedIn()) {
-  //     this.router.navigate(['/login']);
-  //   }
-  // }
+  ngOnInit() {
+    if (this.auth.isLoggedIn()) {
+      this.router.navigate(['/users'], { replaceUrl: true });
+    }
+  }
 
   triggerToast(message: string, type: 'success' | 'error') {
     const toast = {
