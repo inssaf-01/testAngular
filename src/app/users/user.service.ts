@@ -8,7 +8,7 @@ export class UserService {
 
   private api = 'http://localhost:3000/users';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getUsers() {
     return this.http.get(this.api);
@@ -18,9 +18,12 @@ export class UserService {
     return this.http.delete(`${this.api}/${id}`);
   }
   addUser(user: any) {
-  return this.http.post(this.api, user);
-}
-updateUser(id: number, data: any) {
-  return this.http.put(`${this.api}/${id}`, data);
-}
+    return this.http.post(this.api, user);
+  }
+  updateUser(id: number, data: any) {
+    return this.http.put(`${this.api}/${id}`, data);
+  }
+  getStats() {
+    return this.http.get(`${this.api}/stats`);
+  }
 }

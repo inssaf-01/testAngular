@@ -4,6 +4,7 @@ import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-l
 import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout';
 import { ListUserComponent } from './users/list/list';
 import { authGuard } from './auth/auth.guard';
+import { DashboardComponent } from './dashboard/dashboard';
 
 export const routes: Routes = [
 
@@ -16,6 +17,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'login', pathMatch: 'full' }
     ]
   },
+  { path: '', redirectTo: 'users', pathMatch: 'full' },
 
   // 🟢 PROTECTED AREA
   {
@@ -23,8 +25,10 @@ export const routes: Routes = [
     component: DashboardLayoutComponent,
     canActivate: [authGuard],
     children: [
-      { path: 'users', component: ListUserComponent }
+      { path: 'users', component: ListUserComponent },
+      { path: 'dashboard', component: DashboardComponent }
     ]
-  }
+  },
+
 
 ];
