@@ -20,12 +20,17 @@
         <input type="text" placeholder="Rechercher..." [(ngModel)]="searchTerm" (input)="applyFilters()"
           class="pl-10 pr-4 py-2.5 w-64 border border-gray-200 rounded-xl text-sm bg-white focus:border-indigo-500 focus:ring-0 transition-all outline-none" />
       </div>
-
+      <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+        <option value="ALL">Tous les statuts</option>
+        <option value="2">Actif</option>
+        <option value="1">En attente d’activation</option>
+        <option value="0">Archivé</option>
+      </select>
       <!-- FILTER -->
       <select [(ngModel)]="selectedRole" (change)="applyFilters()">
         <option value="ALL">Tous</option>
-        <option value="USER">USER</option>
-        <option value="ADMIN">ADMIN</option>
+        <option value="USER">User</option>
+        <option value="ADMIN">Admin</option>
       </select>
 
       <!-- CREATE -->

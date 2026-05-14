@@ -39,6 +39,7 @@ export class ListUserComponent implements OnInit {
   filteredUsers: any[] = [];
   searchTerm: string = '';
   selectedRole: string = 'ALL';
+  selectedStatus: string = 'ALL';
   paginatedUsers: any[] = []; // users affichés dans la page
   protected readonly Math = Math;
   //Gestion des images 
@@ -302,38 +303,41 @@ export class ListUserComponent implements OnInit {
   applyFilters() {
     const term = (this.searchTerm || '').toLowerCase();
 
-    // filtre sur TOUS les users
     this.filteredUsers = this.users.filter(user => {
       const userRole = (user.role || '').toUpperCase();
+      const userStatus = String(user.status ?? '');
 
+      // filtre rôle
       const roleMatch =
         this.selectedRole === 'ALL' ||
         userRole === this.selectedRole.toUpperCase();
 
+      // filtre status
+      const statusMatch =
+        this.selectedStatus === 'ALL' ||
+        userStatus === this.selectedStatus;
+
+      // recherche texte
       const searchMatch =
         (user.username || '').toLowerCase().includes(term) ||
         (user.login || '').toLowerCase().includes(term);
 
-      return roleMatch && searchMatch;
+      return roleMatch && statusMatch && searchMatch;
     });
 
-    // total = nombre filtré
     this.total = this.filteredUsers.length;
 
-    // reset page si dépassement
     const maxPage = Math.ceil(this.total / this.limit);
     if (this.page > maxPage) {
       this.page = 1;
     }
 
-    // pagination FRONT
     const start = (this.page - 1) * this.limit;
     const end = start + this.limit;
 
     this.paginatedUsers = this.filteredUsers.slice(start, end);
 
     console.log("FILTERED:", this.filteredUsers);
-    console.log("PAGINATED:", this.paginatedUsers);
   }
   passwordMismatch(): boolean {
     const raw = this.editForm.getRawValue();
