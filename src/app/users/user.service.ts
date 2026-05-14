@@ -10,9 +10,10 @@ export class UserService {
 
   constructor(private http: HttpClient) { }
 
-  getUsers() {
-    return this.http.get(this.api);
-  }
+  // avant pagination 
+  // getUsers() { 
+  //   return this.http.get(this.api);
+  // }
 
   deleteUser(id: number) {
     return this.http.delete(`${this.api}/${id}`);
@@ -32,4 +33,10 @@ export class UserService {
       data
     );
   }
+  // apres pagination 
+  getUsers(page: number, limit: number) {
+  return this.http.get<any>(
+    `http://localhost:3000/users?page=${page}&limit=${limit}`
+  );
+}
 }

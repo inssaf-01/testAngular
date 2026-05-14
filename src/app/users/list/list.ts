@@ -17,6 +17,10 @@ export class ListUserComponent implements OnInit {
   form!: FormGroup;
   editForm!: FormGroup; // Utilisation du definite assignment assertion
 
+  page = 1;
+  limit = 8;
+  total = 0;
+
   // États de l'interface
   openCreateModalFlag = false;
   openEditModalFlag = false;
@@ -35,6 +39,7 @@ export class ListUserComponent implements OnInit {
   filteredUsers: any[] = [];
   searchTerm: string = '';
   selectedRole: string = 'ALL';
+  paginatedUsers: any[] = []; // users affichés dans la page
   //Gestion des images 
   defaultImage = '/def_user.png';
   backendUrl = 'http://localhost:3000';
@@ -59,26 +64,59 @@ export class ListUserComponent implements OnInit {
     this.filteredUsers = [];
     this.loadUsers();
   }
-  //chargement des users
+  //chargement des users avant pagination 
+  // loadUsers() {
+  //   console.log("CALL API GET USERS");
+
+  //   this.userService.getUsers().subscribe({
+  //     next: (data: any) => {
+
+  //       this.users = (data || []).map((u: any) => ({
+  //         ...u,
+  //         imageUrl: u.id
+  //           ? `${this.backendUrl}/users/profile-image/${u.id}?t=${Date.now()}`
+  //           : this.defaultImage
+  //       }));
+
+  //       this.applyFilters(); // IMPORTANT
+  //       this.cdr.detectChanges(); // FORCE UPDATE UI
+
+  //     },
+  //     error: (err) => console.error(err)
+  //   });
+  // }
   loadUsers() {
-    console.log("CALL API GET USERS");
+    // IMPORTANT : récupérer TOUS les users sans pagination backend
+    this.userService.getUsers(1, 9999)
+      .subscribe((res: any) => {
+        console.log('res load users', res);
 
-    this.userService.getUsers().subscribe({
-      next: (data: any) => {
-
-        this.users = (data || []).map((u: any) => ({
+        this.users = (res.data || []).map((u: any) => ({
           ...u,
           imageUrl: u.id
             ? `${this.backendUrl}/users/profile-image/${u.id}?t=${Date.now()}`
             : this.defaultImage
         }));
 
-        this.applyFilters(); // IMPORTANT
-        this.cdr.detectChanges(); // FORCE UPDATE UI
+        this.total = this.users.length;
 
-      },
-      error: (err) => console.error(err)
-    });
+        this.applyFilters();
+        this.cdr.detectChanges();
+      });
+  }
+  //fct de changement de page 
+  changePage(newPage: number) {
+    if (newPage < 1) return;
+
+    const maxPage = Math.ceil(this.total / this.limit);
+    if (newPage > maxPage) return;
+
+    this.page = newPage;
+
+    this.applyFilters();
+  }
+  get totalPages(): number {
+    return Math.ceil(this.total / this.limit);
   }
 
   toggleRole(user: any) {
@@ -263,10 +301,13 @@ export class ListUserComponent implements OnInit {
   applyFilters() {
     const term = (this.searchTerm || '').toLowerCase();
 
+    // filtre sur TOUS les users
     this.filteredUsers = this.users.filter(user => {
+      const userRole = (user.role || '').toUpperCase();
 
       const roleMatch =
-        this.selectedRole === 'ALL' || user.role === this.selectedRole;
+        this.selectedRole === 'ALL' ||
+        userRole === this.selectedRole.toUpperCase();
 
       const searchMatch =
         (user.username || '').toLowerCase().includes(term) ||
@@ -275,7 +316,23 @@ export class ListUserComponent implements OnInit {
       return roleMatch && searchMatch;
     });
 
-    console.log("FINAL FILTERED:", this.filteredUsers);
+    // total = nombre filtré
+    this.total = this.filteredUsers.length;
+
+    // reset page si dépassement
+    const maxPage = Math.ceil(this.total / this.limit);
+    if (this.page > maxPage) {
+      this.page = 1;
+    }
+
+    // pagination FRONT
+    const start = (this.page - 1) * this.limit;
+    const end = start + this.limit;
+
+    this.paginatedUsers = this.filteredUsers.slice(start, end);
+
+    console.log("FILTERED:", this.filteredUsers);
+    console.log("PAGINATED:", this.paginatedUsers);
   }
   passwordMismatch(): boolean {
     const raw = this.editForm.getRawValue();
