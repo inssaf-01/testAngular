@@ -1,5 +1,8 @@
 /* Améliorations globales */
-button, a, input, select {
+button,
+a,
+input,
+select {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -9,7 +12,8 @@ button:active {
 }
 
 /* Focus plus propre pour l'accessibilité */
-input:focus, select:focus {
+input:focus,
+select:focus {
   box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
 }
 
@@ -17,7 +21,19 @@ input:focus, select:focus {
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: #e5e7eb;
   border-radius: 10px;
+}
+
+:root {
+  --primary: #0f172a;
+  /* Slate 900 - Très pro */
+  --accent: #06b6d4;
+  /* Cyan 500 - Moderne */
+  --bg-light: #f8fafc;
+  /* Slate 50 - Fond propre */
+  --border: #e2e8f0;
+  /* Slate 200 - Bordures fines */
 }

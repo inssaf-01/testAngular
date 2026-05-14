@@ -94,20 +94,29 @@
         </button>
       </div>
     </div>
-    <div class="flex justify-center items-center gap-2 mt-6">
+    <!-- FOOTER DE LA TABLE -->
+    <div class="bg-slate-50/80 px-8 py-5 flex flex-col md:flex-row justify-between items-center">
+      <div class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+        Membres <span class="text-cyan-600 mx-1">{{ (page - 1) * limit + 1 }} - {{ Math.min(page * limit, total)
+          }}</span>
+        sur <span class="text-slate-900">{{ total }}</span>
+      </div>
 
-      <button class="px-3 py-1 rounded bg-gray-200" (click)="changePage(page - 1)" [disabled]="page === 1">
-        Prev
-      </button>
-
-      <span class="text-sm text-gray-600">
-        Page {{ page }} / {{ totalPages }}
-      </span>
-
-      <button class="px-3 py-1 rounded bg-gray-200" (click)="changePage(page + 1)" [disabled]="page * limit >= total">
-        Next
-      </button>
-
+      <div class="flex items-center gap-4 bg-white px-3 py-1.5 rounded-2xl border border-slate-200 shadow-sm">
+        <button (click)="changePage(page - 1)" [disabled]="page === 1"
+          class="disabled:opacity-20 hover:text-cyan-600 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <span class="text-xs font-black text-slate-900">PAGE {{ page }}</span>
+        <button (click)="changePage(page + 1)" [disabled]="page * limit >= total"
+          class="disabled:opacity-20 hover:text-cyan-600 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 </div>

@@ -40,6 +40,7 @@ export class ListUserComponent implements OnInit {
   searchTerm: string = '';
   selectedRole: string = 'ALL';
   paginatedUsers: any[] = []; // users affichés dans la page
+  protected readonly Math = Math;
   //Gestion des images 
   defaultImage = '/def_user.png';
   backendUrl = 'http://localhost:3000';
