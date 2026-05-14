@@ -35,8 +35,12 @@ export class UserService {
   }
   // apres pagination 
   getUsers(page: number, limit: number) {
-  return this.http.get<any>(
-    `http://localhost:3000/users?page=${page}&limit=${limit}`
-  );
-}
+    return this.http.get<any>(
+      `${this.api}?page=${page}&limit=${limit}`
+    );
+  }
+  updateUserStatus(id: number, status: number) {
+    console.log (' updateUserStatus api ');
+    return this.http.patch(`${this.api}/${id}/status`, { status });
+  }
 }

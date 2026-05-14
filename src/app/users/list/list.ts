@@ -26,8 +26,9 @@ export class ListUserComponent implements OnInit {
   openEditModalFlag = false;
   showConfirmModal = false;
   showToast = false;
-  confirmAction: 'delete' | 'update' | null = null;
+  confirmAction: 'delete' | 'updateUser' | 'updateStatus' | null = null;
   pendingUpdateData: any = null;
+  pendingStatusUpdate: any = null;
 
   // Variables de gestion
   selectedUserId: number | null = null;
@@ -129,21 +130,14 @@ export class ListUserComponent implements OnInit {
       .subscribe({
 
         next: (res: any) => {
-
           if (!res.success) {
             this.triggerToast(res.message, 'error');
             return;
           }
 
-          // UPDATE UI DIRECT
-          this.users = this.users.map(u =>
-            u.id === user.id ? { ...u, role: newRole } : u
-          );
           this.loadUsers();
-
           this.triggerToast('Role updated', 'success');
         },
-
         error: () => {
           this.triggerToast('Server error', 'error');
         }
@@ -182,6 +176,7 @@ export class ListUserComponent implements OnInit {
     this.pendingUpdateData = null;
 
     this.userToDeleteId = null;
+    this.pendingStatusUpdate = null;
 
     this.form.reset({
       role: 'USER'
@@ -382,11 +377,11 @@ export class ListUserComponent implements OnInit {
 
 
     // ================= UPDATE =================
-    if (this.confirmAction === 'update') {
+    if (this.confirmAction === 'updateUser') {
 
       this.userService.updateUser(
         this.selectedUserId!,
-        this.pendingUpdateData
+        this.pendingStatusUpdate || this.pendingUpdateData
       )
         .subscribe({
 
@@ -411,6 +406,28 @@ export class ListUserComponent implements OnInit {
               backend?.message || 'Erreur serveur',
               'error'
             );
+          }
+        });
+    }
+    if (this.confirmAction === 'updateStatus') {
+
+      this.userService.updateUserStatus(
+        this.selectedUserId!,
+        this.pendingStatusUpdate
+      )
+        .subscribe({
+          next: (res: any) => {
+            if (!res.success) {
+              this.triggerToast(res.message, 'error');
+              return;
+            }
+
+            this.loadUsers();
+            this.closeModal();
+            this.triggerToast(res.message, 'success');
+          },
+          error: (err) => {
+            this.triggerToast(err.error?.message || 'Erreur serveur', 'error');
           }
         });
     }
@@ -439,5 +456,13 @@ export class ListUserComponent implements OnInit {
 
         this.cdr.detectChanges();
       });
+  }
+  //Gestion de status
+  prepareStatusChange(user: any, newStatus: number) {
+    this.selectedUserId = user.id;
+
+   this.pendingStatusUpdate = newStatus;
+    this.confirmAction = 'updateStatus';
+    this.showConfirmModal = true;
   }
 }
