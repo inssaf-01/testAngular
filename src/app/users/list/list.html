@@ -27,10 +27,15 @@
         <option value="0">Archivé</option>
       </select>
       <!-- FILTER -->
-      <select [(ngModel)]="selectedRole" (change)="applyFilters()">
+      <select [(ngModel)]="selectedRole" (change)="applyFilters()"
+        class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+
         <option value="ALL">Tous</option>
-        <option value="USER">User</option>
-        <option value="ADMIN">Admin</option>
+
+        <option *ngFor="let role of roles" [value]="role.name">
+          {{ role.name }}
+        </option>
+
       </select>
 
       <!-- CREATE -->
@@ -87,14 +92,14 @@
 
       <!-- ROLE -->
       <div class="col-span-2">
-        <button (click)="toggleRole(user)" class="px-3 py-1 text-[10px] uppercase rounded-full font-bold border"
-          [ngClass]="user.role === 'ADMIN'
-          ? 'bg-purple-50 text-purple-700 border-purple-100'
-          : 'bg-blue-50 text-blue-700 border-blue-100'">
+        <select [ngModel]="user.role_id" (ngModelChange)="toggleRole(user, $event)"
+          class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
 
-          {{ user.role }}
+          <option *ngFor="let role of roles" [ngValue]="role.id">
+            {{ role.name }}
+          </option>
 
-        </button>
+        </select>
       </div>
 
       <!-- STATUS -->
@@ -166,7 +171,7 @@
   </div>
 </div>
 <!-- EMPTY -->
-<div *ngIf="filteredUsers.length === 0" class="text-center mt-10 text-gray-400"> No users found </div>
+<div *ngIf="paginatedUsers.length === 0" class="text-center mt-10 text-gray-400"> No users found </div>
 <!-- ================= CREATE MODAL ================= -->
 <!-- OVERLAY AVEC BLUR -->
 <div *ngIf="openCreateModalFlag"
@@ -234,13 +239,22 @@
 
       <!-- ROLE SELECTION -->
       <div>
-        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Rôle
-          Système</label>
+        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
+          Rôle Système
+        </label>
+
         <select
           class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none appearance-none"
-          formControlName="role">
-          <option value="USER">Utilisateur Standard</option>
-          <option value="ADMIN">Administrateur</option>
+          formControlName="role_id">
+
+          <option [ngValue]="null" disabled>
+            Sélectionner un rôle
+          </option>
+
+          <option *ngFor="let role of roles" [ngValue]="role.id">
+            {{ role.name }}
+          </option>
+
         </select>
       </div>
 
@@ -346,7 +360,8 @@
       <button type="button" (click)="executeConfirmedAction()" [class.bg-red-600]="confirmAction === 'delete'"
         [class.bg-indigo-600]="confirmAction === 'updateStatus'"
         class="px-4 py-3 rounded-xl text-sm font-bold text-white shadow-lg transition-all active:scale-95 shadow-opacity-20"
-        [class.shadow-red-200]="confirmAction === 'delete'" [class.shadow-indigo-200]="confirmAction === 'updateStatus'">
+        [class.shadow-red-200]="confirmAction === 'delete'"
+        [class.shadow-indigo-200]="confirmAction === 'updateStatus'">
         Confirmer
       </button>
     </div>

@@ -40,7 +40,9 @@ export class UserService {
     );
   }
   updateUserStatus(id: number, status: number) {
-    console.log (' updateUserStatus api ');
     return this.http.patch(`${this.api}/${id}/status`, { status });
+  }
+  getRoles() {
+    return this.http.get(`${this.api}/roles`);
   }
 }

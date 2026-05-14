@@ -15,11 +15,12 @@ import { ImageService } from '../../profile/image.service';
 export class ListUserComponent implements OnInit {
   users: any[] = [];
   form!: FormGroup;
-  editForm!: FormGroup; // Utilisation du definite assignment assertion
+  // editForm!: FormGroup; // Utilisation du definite assignment assertion
 
   page = 1;
   limit = 8;
   total = 0;
+  roles: any[] = [];
 
   // États de l'interface
   openCreateModalFlag = false;
@@ -58,7 +59,7 @@ export class ListUserComponent implements OnInit {
       username: ['', [Validators.required, Validators.minLength(3)]],
       login: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      role: ['USER', Validators.required]
+      role_id: [null, Validators.required]
     });
   }
   // demarage 
@@ -66,6 +67,7 @@ export class ListUserComponent implements OnInit {
     this.initForm();
     this.filteredUsers = [];
     this.loadUsers();
+    this.loadRoles();
   }
   //chargement des users avant pagination 
   // loadUsers() {
@@ -107,6 +109,12 @@ export class ListUserComponent implements OnInit {
         this.cdr.detectChanges();
       });
   }
+  loadRoles() {
+    this.userService.getRoles().subscribe((res: any) => {
+      console.log('load roles : ', res);
+      this.roles = res.data;
+    });
+  }
   //fct de changement de page 
   changePage(newPage: number) {
     if (newPage < 1) return;
@@ -122,27 +130,28 @@ export class ListUserComponent implements OnInit {
     return Math.ceil(this.total / this.limit);
   }
 
-  toggleRole(user: any) {
+  toggleRole(user: any, roleId: number) {
+    this.userService.updateUser(user.id, {
+      role_id: Number(roleId)
+    }).subscribe({
+      next: () => {
+        user.role_id = Number(roleId);
 
-    const newRole = user.role === 'USER' ? 'ADMIN' : 'USER';
+        // mise à jour visuelle immédiate
+        user.role = this.roles.find(
+          r => r.id === Number(roleId)
+        )?.name;
 
-    this.userService.updateUser(user.id, { role: newRole })
-      .subscribe({
+        this.triggerToast('Rôle mis à jour', 'success');
+      },
 
-        next: (res: any) => {
-          if (!res.success) {
-            this.triggerToast(res.message, 'error');
-            return;
-          }
-
-          this.loadUsers();
-          this.triggerToast('Role updated', 'success');
-        },
-        error: () => {
-          this.triggerToast('Server error', 'error');
-        }
-
-      });
+      error: (err) => {
+        this.triggerToast(
+          err.error?.message || 'Erreur lors de la mise à jour',
+          'error'
+        );
+      }
+    });
   }
 
   // --- GESTION DES MODALS ---
@@ -151,19 +160,19 @@ export class ListUserComponent implements OnInit {
     this.openCreateModalFlag = true;
   }
 
-  openEditModal(user: any) {
-    this.selectedUserId = user.id;
-    this.editForm = this.fb.group({
-      username: [{ value: user.username, disabled: true }],
-      login: [user.login, [Validators.required, Validators.email]],
-      role: [user.role, Validators.required],
+  // openEditModal(user: any) {
+  //   this.selectedUserId = user.id;
+  //   this.editForm = this.fb.group({
+  //     username: [{ value: user.username, disabled: true }],
+  //     login: [user.login, [Validators.required, Validators.email]],
+  //     role: [user.role, Validators.required],
 
-      oldPassword: [''],
-      newPassword: ['', [Validators.minLength(6)]],
-      confirmPassword: ['']
-    }, { validators: this.passwordMatchValidator });
-    this.openEditModalFlag = true;
-  }
+  //     oldPassword: [''],
+  //     newPassword: ['', [Validators.minLength(6)]],
+  //     confirmPassword: ['']
+  //   }, { validators: this.passwordMatchValidator });
+  //   this.openEditModalFlag = true;
+  // }
 
   closeModal() {
 
@@ -179,7 +188,7 @@ export class ListUserComponent implements OnInit {
     this.pendingStatusUpdate = null;
 
     this.form.reset({
-      role: 'USER'
+      role_id: 1
     });
 
     this.selectedUserId = null;
@@ -212,44 +221,28 @@ export class ListUserComponent implements OnInit {
       return;
     }
 
-    this.userService.addUser(this.form.value)
+    const payload = {
+      username: this.form.value.username,
+      login: this.form.value.login,
+      password: this.form.value.password,
+      role_id: Number(this.form.value.role_id)
+    };
+
+    console.log("payload :", payload);
+
+    this.userService.addUser(payload)
       .subscribe({
-
         next: (res: any) => {
-
-          // SUCCESS FALSE
-          if (!res.success) {
-            this.triggerToast(res.message, 'error');
-            return;
-          }
-
-          // AJOUT DIRECT DANS LA LISTE
           this.closeModal();
-
+          this.loadUsers();
           this.triggerToast(res.message, 'success');
         },
 
         error: (err) => {
+          console.log(err);
 
-          const backend = err.error;
-
-          // MULTIPLE ERRORS
-          if (backend?.messages?.length) {
-
-            backend.messages.forEach((msg: string, index: number) => {
-
-              setTimeout(() => {
-                this.triggerToast(msg, 'error');
-              }, index * 500);
-
-            });
-
-            return;
-          }
-
-          // SINGLE ERROR
           this.triggerToast(
-            backend?.message || 'Erreur serveur',
+            err.error?.message || 'Erreur serveur',
             'error'
           );
         }
@@ -299,20 +292,14 @@ export class ListUserComponent implements OnInit {
     const term = (this.searchTerm || '').toLowerCase();
 
     this.filteredUsers = this.users.filter(user => {
-      const userRole = (user.role || '').toUpperCase();
-      const userStatus = String(user.status ?? '');
-
-      // filtre rôle
       const roleMatch =
         this.selectedRole === 'ALL' ||
-        userRole === this.selectedRole.toUpperCase();
+        this.roles.find(r => r.id === user.role_id)?.name.toUpperCase() === this.selectedRole.toUpperCase();
 
-      // filtre status
       const statusMatch =
         this.selectedStatus === 'ALL' ||
-        userStatus === this.selectedStatus;
+        Number(user.status) === Number(this.selectedStatus);
 
-      // recherche texte
       const searchMatch =
         (user.username || '').toLowerCase().includes(term) ||
         (user.login || '').toLowerCase().includes(term);
@@ -320,9 +307,11 @@ export class ListUserComponent implements OnInit {
       return roleMatch && statusMatch && searchMatch;
     });
 
+    // IMPORTANT
     this.total = this.filteredUsers.length;
 
     const maxPage = Math.ceil(this.total / this.limit);
+
     if (this.page > maxPage) {
       this.page = 1;
     }
@@ -331,13 +320,11 @@ export class ListUserComponent implements OnInit {
     const end = start + this.limit;
 
     this.paginatedUsers = this.filteredUsers.slice(start, end);
-
-    console.log("FILTERED:", this.filteredUsers);
   }
-  passwordMismatch(): boolean {
-    const raw = this.editForm.getRawValue();
-    return raw.newPassword !== raw.confirmPassword;
-  }
+  // passwordMismatch(): boolean {
+  //   const raw = this.editForm.getRawValue();
+  //   return raw.newPassword !== raw.confirmPassword;
+  // }
   executeConfirmedAction() {
 
     // ================= DELETE =================
@@ -460,8 +447,7 @@ export class ListUserComponent implements OnInit {
   //Gestion de status
   prepareStatusChange(user: any, newStatus: number) {
     this.selectedUserId = user.id;
-
-   this.pendingStatusUpdate = newStatus;
+    this.pendingStatusUpdate = newStatus;
     this.confirmAction = 'updateStatus';
     this.showConfirmModal = true;
   }
