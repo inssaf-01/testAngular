@@ -18,11 +18,11 @@ export class DashboardComponent implements OnInit {
 
   pieChartType: ChartType = 'pie';
 
+  stats: { role: string, count: number }[] = [];
+
   pieChartData: any = {
-    labels: ['Admins', 'Users'],
-    datasets: [{
-      data: [0, 0]
-    }]
+    labels: [],
+    datasets: [{ data: [] }]
   };
 
   constructor(private userService: UserService) { }
@@ -35,22 +35,32 @@ export class DashboardComponent implements OnInit {
 
   loadStats() {
     this.userService.getStats().subscribe((res: any) => {
-      this.adminCount = res.admin;
-      this.userCount = res.user;
+
+      this.stats = res;
 
       this.pieChartData = {
-        labels: ['Admins', 'Utilisateurs'],
+        labels: res.map((r: any) => r.role),
         datasets: [{
-          data: [this.adminCount, this.userCount],
-          backgroundColor: ['#4f46e5', '#10b981'], // Indigo-600 et Emerald-500
-          hoverBackgroundColor: ['#4338ca', '#059669'],
-          borderWidth: 0, // Supprime les bordures blanches pour un look plus plat/moderne
+          data: res.map((r: any) => r.count),
+          backgroundColor: this.generateColors(res.length),
           hoverOffset: 20
         }]
       };
     });
   }
+  generateColors(size: number): string[] {
+    const palette = [
+      '#4f46e5',
+      '#10b981',
+      '#f59e0b',
+      '#ef4444',
+      '#06b6d4',
+      '#a855f7',
+      '#84cc16'
+    ];
 
+    return Array.from({ length: size }, (_, i) => palette[i % palette.length]);
+  }
   // Optionnel : Ajoutez des options pour rendre le graphique "Donut" (plus moderne)
   public pieChartOptions: any = {
     plugins: {
