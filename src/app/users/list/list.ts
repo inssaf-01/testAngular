@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractContro
 import { UserService } from '../user.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { ImageService } from '../../profile/image.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-list',
@@ -15,6 +16,8 @@ import { ImageService } from '../../profile/image.service';
 export class ListUserComponent implements OnInit {
   users: any[] = [];
   form!: FormGroup;
+  isAdmin = false;
+  isSuperAdmin = false;
   // editForm!: FormGroup; // Utilisation du definite assignment assertion
 
   page = 1;
@@ -47,27 +50,32 @@ export class ListUserComponent implements OnInit {
   //Gestion des images 
   defaultImage = '/def_user.png';
   backendUrl = 'http://localhost:3000';
-  constructor(
+  constructor(private authService: AuthService,
     private userService: UserService,
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef,
     private imageService: ImageService
   ) { }
-
+  authUser: any;
   initForm() {
     this.form = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
       login: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      role_id: [null, Validators.required]
+      role_id: [1]
     });
   }
   // demarage 
   ngOnInit() {
+    this.authUser = this.authService.getUser();
     this.initForm();
     this.filteredUsers = [];
     this.loadUsers();
-    this.loadRoles();
+    if (this.authUser?.role_id === 3) {
+      this.loadRoles();
+    }
+    this.isAdmin = this.authUser?.role_id === 2;
+    this.isSuperAdmin = this.authUser?.role_id === 3;
   }
   //chargement des users avant pagination 
   // loadUsers() {
@@ -103,16 +111,23 @@ export class ListUserComponent implements OnInit {
             : this.defaultImage
         }));
 
-        this.total = this.users.length;
+        this.total = res.total;
 
         this.applyFilters();
         this.cdr.detectChanges();
       });
   }
   loadRoles() {
-    this.userService.getRoles().subscribe((res: any) => {
-      console.log('load roles : ', res);
-      this.roles = res.data;
+    if (this.authUser?.role_id !== 3) return;
+
+    this.userService.getRoles().subscribe({
+      next: (res: any) => {
+        this.roles = res.data;
+      },
+      error: (err) => {
+        console.warn('Roles not allowed:', err);
+        this.roles = [];
+      }
     });
   }
   //fct de changement de page 
@@ -225,7 +240,9 @@ export class ListUserComponent implements OnInit {
       username: this.form.value.username,
       login: this.form.value.login,
       password: this.form.value.password,
-      role_id: Number(this.form.value.role_id)
+      role_id: this.isSuperAdmin
+        ? Number(this.form.value.role_id)
+        : 1 // USER par défaut
     };
 
     console.log("payload :", payload);
@@ -450,5 +467,19 @@ export class ListUserComponent implements OnInit {
     this.pendingStatusUpdate = newStatus;
     this.confirmAction = 'updateStatus';
     this.showConfirmModal = true;
+  }
+  get availableStatuses() {
+    return this.isSuperAdmin
+      ? [
+        { value: 'ALL', label: 'Tous les statuts' },
+        { value: '2', label: 'Actif' },
+        { value: '1', label: 'En attente' },
+        { value: '0', label: 'Archivé' },
+      ]
+      : [
+        { value: 'ALL', label: 'Tous les statuts' },
+        { value: '2', label: 'Actif' },
+        { value: '1', label: 'En attente' },
+      ];
   }
 }

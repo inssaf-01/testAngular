@@ -24,12 +24,13 @@
         <option value="ALL">Tous les statuts</option>
         <option value="2">Actif</option>
         <option value="1">En attente d’activation</option>
-        <option value="0">Archivé</option>
+        <option *ngIf="isSuperAdmin" value="0">
+          Archivé
+        </option>
       </select>
       <!-- FILTER -->
-      <select [(ngModel)]="selectedRole" (change)="applyFilters()"
+      <select *ngIf="isSuperAdmin" [(ngModel)]="selectedRole" (change)="applyFilters()"
         class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
-
         <option value="ALL">Tous</option>
 
         <option *ngFor="let role of roles" [value]="role.name">
@@ -52,11 +53,12 @@
 
     <!-- HEADER -->
     <div
-      class="grid grid-cols-12 px-6 py-4 bg-gray-50/50 border-b border-gray-100 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+      class="grid px-6 py-4 bg-gray-50/50 border-b border-gray-100 text-[11px] font-bold text-gray-400 uppercase tracking-widest"
+      [ngClass]="isSuperAdmin ? 'grid-cols-12' : 'grid-cols-10'">
 
       <div class="col-span-4">Utilisateur</div>
       <div class="col-span-3">Login</div>
-      <div class="col-span-2">Rôle</div>
+      <div class="col-span-2" *ngIf="isSuperAdmin">Rôle</div>
       <div class="col-span-2">Statut</div>
       <div class="col-span-1 text-right">Actions</div>
 
@@ -64,7 +66,8 @@
 
     <!-- ROWS -->
     <div *ngFor="let user of paginatedUsers"
-      class="grid grid-cols-12 items-center px-6 py-4 border-b border-gray-50 hover:bg-indigo-50/30 transition-colors">
+      class="grid items-center px-6 py-4 border-b border-gray-50 hover:bg-indigo-50/30 transition-colors"
+      [ngClass]="isSuperAdmin ? 'grid-cols-12' : 'grid-cols-10'">
 
       <!-- USER -->
       <div class="col-span-4 flex items-center gap-4">
@@ -91,8 +94,8 @@
       </div>
 
       <!-- ROLE -->
-      <div class="col-span-2">
-        <select [ngModel]="user.role_id" (ngModelChange)="toggleRole(user, $event)"
+      <div class="col-span-2" *ngIf="isSuperAdmin">
+        <select *ngIf="isSuperAdmin" [ngModel]="user.role_id" (ngModelChange)="toggleRole(user, $event)"
           class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
 
           <option *ngFor="let role of roles" [ngValue]="role.id">
@@ -242,6 +245,7 @@
         <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
           Rôle Système
         </label>
+        <div *ngIf="isSuperAdmin">
 
         <select
           class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none appearance-none"
@@ -256,6 +260,10 @@
           </option>
 
         </select>
+        <div *ngIf="!isSuperAdmin">
+          <input disabled value="USER" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none appearance-none" />
+        </div>
+        </div>
       </div>
 
       <!-- ACTIONS -->

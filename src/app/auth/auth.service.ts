@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { jwtDecode } from 'jwt-decode';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -9,33 +10,46 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private router: Router   // ✅ AJOUT ICI
+    private router: Router
   ) { }
 
   login(data: { login: string; password: string }) {
-    console.log('login function ');
     return this.http.post<any>(`${this.api}/login`, data);
   }
   isBrowser(): boolean {
     return typeof window !== 'undefined';
   }
-
   saveToken(token: string) {
-    if (this.isBrowser()) {
-      localStorage.setItem('token', token);
+    localStorage.setItem('token', token);
+  }
+  isTokenExpired(token: string): boolean {
+    try {
+      const decoded: any = jwtDecode(token);
+      return decoded.exp * 1000 < Date.now();
+    } catch (e) {
+      return true;
     }
   }
 
-  getToken() {
-    if (this.isBrowser()) {
-      return localStorage.getItem('token');
-    }
-    return null;
+  getToken(): string | null {
+    return localStorage.getItem('token');
   }
 
   isLoggedIn(): boolean {
-    if (!this.isBrowser()) return false;
-    return !!localStorage.getItem('token');
+    const token = this.getToken();
+    if (!token) return false;
+
+    try {
+      const decoded: any = jwtDecode(token);
+      if (decoded.exp * 1000 < Date.now()) {
+        this.logout();
+        return false;
+      }
+      return true;
+    } catch {
+      this.logout();
+      return false;
+    }
   }
   saveUser(user: any) {
     localStorage.setItem('user', JSON.stringify(user));
@@ -47,9 +61,8 @@ export class AuthService {
   }
 
   logout() {
-    if (this.isBrowser()) {
-      localStorage.removeItem('token');
-    }
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     this.router.navigate(['/login'], { replaceUrl: true });
   }
   //RESET PWD
@@ -68,6 +81,10 @@ export class AuthService {
   }) {
     return this.http.post<any>(`${this.api}/reset-password`, data);
   }
+  getMe() {
+    return this.http.get<any>(`${this.api}/me`);
+  }
+
 
 
 }

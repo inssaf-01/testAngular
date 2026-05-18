@@ -24,6 +24,7 @@ export class LoginComponent {
   resetCode = '';
   newPassword = '';
   confirmPassword = '';
+  authService: any;
 
   constructor(
     private auth: AuthService,
@@ -49,50 +50,32 @@ export class LoginComponent {
     }, 3000);
   }
 
-  login() {
-    this.auth.login({
-      login: this.loginValue,
-      password: this.password
-    }).subscribe({
+login() {
+  this.auth.login({
+    login: this.loginValue,
+    password: this.password
+  }).subscribe({
+    next: (res) => {
 
-      next: (res) => {
+      this.auth.saveToken(res.accessToken);
+      this.auth.saveUser(res.user);
 
-        this.auth.saveToken(res.token);
-        this.auth.saveUser(res.user);
+      const roleId = res.user.role_id;
 
-        this.triggerToast(res.message || 'Login successful', 'success');
+      const routes: any = {
+        3: '/users',
+        2: '/users',
+        1: '/client-space'
+      };
 
-        setTimeout(() => {
-          this.router.navigate(['/users']);
-        }, 800);
-      },
+      this.router.navigate([routes[roleId] || '/login']);
+    },
 
-      error: (err) => {
-
-        // Cas backend avec réponse JSON
-        if (err?.error?.message) {
-          this.triggerToast(err.error.message, 'error');
-          return;
-        }
-
-        // Cas serveur injoignable
-        if (err.status === 0) {
-          this.triggerToast('Server is not reachable', 'error');
-          return;
-        }
-
-        // Cas serveur erreur 500
-        if (err.status >= 500) {
-          this.triggerToast('Internal server error', 'error');
-          return;
-        }
-
-        // fallback
-        this.triggerToast('Unexpected error', 'error');
-      }
-
-    });
-  }
+    error: (err) => {
+      this.triggerToast(err?.error?.message || 'Login failed', 'error');
+    }
+  });
+}
   openResetModal() {
     this.showResetModal = true;
     this.resetStep = 1;

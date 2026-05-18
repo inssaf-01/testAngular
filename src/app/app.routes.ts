@@ -6,10 +6,10 @@ import { ListUserComponent } from './users/list/list';
 import { authGuard } from './auth/auth.guard';
 import { DashboardComponent } from './dashboard/dashboard';
 import { ProfileComponent } from './profile/profile';
+import { roleGuard } from './auth/role.guard';
 
 export const routes: Routes = [
 
-  // 🔴 AUTH
   {
     path: '',
     component: AuthLayoutComponent,
@@ -18,19 +18,19 @@ export const routes: Routes = [
       { path: '', redirectTo: 'login', pathMatch: 'full' }
     ]
   },
-  { path: '', redirectTo: 'users', pathMatch: 'full' },
 
-  // 🟢 PROTECTED AREA
   {
     path: '',
     component: DashboardLayoutComponent,
     canActivate: [authGuard],
     children: [
-      { path: 'users', component: ListUserComponent },
+
       { path: 'dashboard', component: DashboardComponent },
-      { path: 'profile', component: ProfileComponent, }
+      { path: 'users', component: ListUserComponent, canActivate: [roleGuard(['ADMIN', 'SUPER_ADMIN'])] },
+      {
+        path: 'profile',
+        component: ProfileComponent
+      }
     ]
   },
-
-
 ];
